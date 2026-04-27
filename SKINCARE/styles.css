@@ -1026,7 +1026,7 @@ card-category {
   bottom: 20px;
   right: 20px;
   background: #d4a5b9; /* Color rosa de tu marca */
-  pading: 15px;
+  padding: 15px;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
