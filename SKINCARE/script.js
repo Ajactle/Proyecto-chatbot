@@ -101,7 +101,7 @@ async function sendMessage() {
 
     try {
         // Enviar la petición a tu archivo seguro en Netlify
-        const response = await fetch('/.netlify/functions/chat', {
+        const response = await fetch('/.netlify/functions/chat.js', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
