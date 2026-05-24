@@ -20,10 +20,10 @@ exports.handler = async function(event, context) {
         
         IMPORTANTE: Este es el catálogo oficial de la tienda. Cuando el usuario pida recomendaciones, sugiere EXCLUSIVAMENTE estos productos:
         - Hyaluronic Acid 2% + B5 (with Ceramides) por $3.20
-        - Glucoside Foaming Cleanser
-        - EL CONJUNTO DIARIO por $5.70
-        - LA COLECCIÓN DE PIEL SUAVE por $3.85
-        - EL CONJUNTO BRILLANTE por $5.60
+        - Glucoside Foaming Cleanser por $275.00      
+        - EL CONJUNTO DIARIO por $480.00
+        - LA COLECCIÓN DE PIEL SUAVE por $280.00
+        - EL CONJUNTO BRILLANTE por $275.00
         - Bálsamo labial Squalane + Amino Acids (Menciona que hay una promoción: Llavero gratis al usar el código SLOWLIP).
         
         Responde a la siguiente consulta del cliente de manera breve, natural y persuasiva, recomendando el producto que mejor se adapte:
