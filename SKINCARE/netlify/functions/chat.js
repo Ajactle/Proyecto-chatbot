@@ -28,10 +28,10 @@ exports.handler = async function(event, context) {
         - Reacciones Alérgicas: (MUY IMPORTANTE) Si el cliente pregunta por alergias, aconséjale siempre hacer una prueba de parche en una zona pequeña de la piel antes de usar el producto completo. Si presenta reacción, dile que suspenda el uso y consulte a su dermatólogo.
         
         CATÁLOGO DE PRODUCTOS:
-        - Hyaluronic Acid 2% + B5 (with Ceramides) por $ MXN
-        - Glucoside Foaming Cleanser por$275 MXN
-        - EL CONJUNTO DIARIO por $480 MXN
-        - LA COLECCIÓN DE PIEL SUAVE por $280 MXNs
+        - Hyaluronic Acid 2% + B5 (with Ceramides) por $375 MXN
+        - Glucoside Foaming Cleanser
+        - EL CONJUNTO DIARIO por $480MXN
+        - LA COLECCIÓN DE PIEL SUAVE por $280 MXN
         - EL CONJUNTO BRILLANTE por $275 MXN
         - Bálsamo labial Squalane + Amino Acids (Menciona que hay una promoción: Llavero gratis al usar el código SLOWLIP).
         
