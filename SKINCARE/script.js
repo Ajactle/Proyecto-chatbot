@@ -159,37 +159,146 @@ if (userInputField) {
 }
 
 /* ==========================================
-   4. LÓGICA DEL CARRITO DE COMPRAS
+   4 Y 8. LÓGICA COMPLETA DEL CARRITO DE COMPRAS (IMÁGENES Y CANTIDAD)
    ========================================== */
-// Leemos si ya hay productos guardados en el almacenamiento del navegador
 let carrito = JSON.parse(localStorage.getItem('carrito_holabonita')) || [];
 const cartCounter = document.querySelector('.content-shopping-cart .number');
+const cartSidebar = document.getElementById('cart-sidebar');
+const cartOverlay = document.getElementById('cart-overlay');
+const closeCartBtn = document.getElementById('close-cart');
+const headerCartIcon = document.querySelector('.container-user');
+const cartItemsContainer = document.getElementById('cart-items');
+const cartTotalElement = document.getElementById('cart-total');
 
-function actualizarContadorCarrito() {
-    if(cartCounter) {
-        cartCounter.textContent = `(${carrito.length})`;
+// Agregar o sumar producto al carrito
+function agregarAlCarrito(nombre, precio, imagen) {
+    // Revisamos si el producto ya está en el carrito
+    const itemExistente = carrito.find(item => item.nombre === nombre);
+    
+    if (itemExistente) {
+        itemExistente.cantidad += 1; // Si ya existe, le sumamos 1
+    } else {
+        // Si es nuevo, lo guardamos con su imagen y cantidad 1
+        carrito.push({ nombre, precio, imagen, cantidad: 1 });
     }
-}
-actualizarContadorCarrito(); // Actualizar al cargar la página
-
-function agregarAlCarrito(nombre, precio) {
-    carrito.push({ nombre, precio });
+    
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
-    actualizarContadorCarrito();
-    alert(`¡Increíble! Hemos añadido "${nombre}" a tu carrito.`);
+    renderizarCarrito(); // Actualizamos lo visual al instante
+    
+    // Mostramos el carrito automáticamente para que el cliente vea que se agregó
+    cartSidebar.classList.add('open');
+    cartOverlay.classList.add('active');
 }
 
-// Botones directos de "Agregar al carrito" en las tarjetas
+// Botones directos de "Comprar +" en las tarjetas
 const botonesCarrito = document.querySelectorAll('.card-product .add-cart');
 botonesCarrito.forEach(boton => {
     boton.addEventListener('click', (e) => {
         const card = e.target.closest('.card-product');
         const titulo = card.querySelector('h3').textContent;
         const precio = card.querySelector('.price').childNodes[0].textContent.trim();
-        agregarAlCarrito(titulo, precio);
+        const imagen = card.querySelector('img').src; // Capturamos la foto
+        agregarAlCarrito(titulo, precio, imagen);
     });
 });
 
+// Modificación para el botón de la Ventana Emergente (Modal)
+const btnModalAddCart = document.getElementById('modal-add-cart');
+if (btnModalAddCart) {
+    // Nos aseguramos de quitar eventos anteriores para que no se dupliquen clics
+    const nuevoBtnModal = btnModalAddCart.cloneNode(true);
+    btnModalAddCart.parentNode.replaceChild(nuevoBtnModal, btnModalAddCart);
+    
+    nuevoBtnModal.addEventListener('click', () => {
+        const modalTitle = document.getElementById('modal-title');
+        const modalPrice = document.getElementById('modal-price');
+        const modalImg = document.getElementById('modal-img');
+        agregarAlCarrito(modalTitle.textContent, modalPrice.textContent, modalImg.src);
+        document.getElementById('product-modal').classList.remove('active');
+    });
+}
+
+// Dibujar el carrito lateral
+function renderizarCarrito() {
+    if(!cartItemsContainer) return;
+    
+    cartItemsContainer.innerHTML = ''; 
+    let totalPrecio = 0;
+    let totalArticulos = 0;
+
+    if(carrito.length === 0) {
+        cartItemsContainer.innerHTML = '<p>Tu carrito está vacío 😔</p>';
+    } else {
+        carrito.forEach((producto, index) => {
+            let precioNumerico = parseFloat(producto.precio.replace(/[^0-9.-]+/g,""));
+            let cantidad = producto.cantidad || 1; // Por si tenías productos viejos guardados
+            let imagenSrc = producto.imagen || 'https://via.placeholder.com/60';
+
+            if(!isNaN(precioNumerico)) {
+                totalPrecio += (precioNumerico * cantidad);
+            }
+            totalArticulos += cantidad;
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cart-item';
+            itemDiv.innerHTML = `
+                <img src="${imagenSrc}" alt="${producto.nombre}" class="cart-item-img">
+                <div class="cart-item-info">
+                    <h4>${producto.nombre}</h4>
+                    <span class="cart-item-price">${producto.precio}</span>
+                    <div class="cart-quantity">
+                        <button onclick="cambiarCantidad(${index}, -1)">-</button>
+                        <span>${cantidad}</span>
+                        <button onclick="cambiarCantidad(${index}, 1)">+</button>
+                    </div>
+                </div>
+                <button onclick="eliminarDelCarrito(${index})" class="cart-delete-btn" title="Eliminar">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            `;
+            cartItemsContainer.appendChild(itemDiv);
+        });
+    }
+    
+    if(cartTotalElement) cartTotalElement.textContent = `$${totalPrecio.toFixed(2)}`;
+    if(cartCounter) cartCounter.textContent = `(${totalArticulos})`;
+}
+
+// Sumar o restar cantidades desde el carrito lateral
+window.cambiarCantidad = function(index, cambio) {
+    if(carrito[index].cantidad + cambio > 0) {
+        carrito[index].cantidad += cambio;
+    } else {
+        carrito.splice(index, 1); // Si baja de 1, lo borramos de la lista
+    }
+    localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
+    renderizarCarrito();
+};
+
+// Eliminar producto individual
+window.eliminarDelCarrito = function(index) {
+    carrito.splice(index, 1);
+    localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
+    renderizarCarrito(); 
+};
+
+// Abrir y cerrar el carrito lateral
+if(headerCartIcon) {
+    headerCartIcon.addEventListener('click', () => {
+        cartSidebar.classList.add('open');
+        cartOverlay.classList.add('active');
+        renderizarCarrito(); 
+    });
+}
+function cerrarCarrito() {
+    cartSidebar.classList.remove('open');
+    cartOverlay.classList.remove('active');
+}
+if(closeCartBtn) closeCartBtn.addEventListener('click', cerrarCarrito);
+if(cartOverlay) cartOverlay.addEventListener('click', cerrarCarrito);
+
+// Dibujamos el carrito la primera vez que carga la página
+renderizarCarrito();
 /* ==========================================
    5. LÓGICA DE LA VENTANA EMERGENTE (MODAL)
    ========================================== */
@@ -275,69 +384,3 @@ botonesLeerMas.forEach(boton => {
         alert("¡Próximamente! ✨ Estamos preparando este artículo con los mejores tips de belleza para ti.");
     });
 });
-/* ==========================================
-   8. LÓGICA DEL CARRITO LATERAL VISUAL
-   ========================================== */
-const cartSidebar = document.getElementById('cart-sidebar');
-const cartOverlay = document.getElementById('cart-overlay');
-const closeCartBtn = document.getElementById('close-cart');
-const headerCartIcon = document.querySelector('.container-user'); // El botón de arriba
-const cartItemsContainer = document.getElementById('cart-items');
-const cartTotalElement = document.getElementById('cart-total');
-
-// 1. Abrir el carrito
-if(headerCartIcon) {
-    headerCartIcon.addEventListener('click', () => {
-        cartSidebar.classList.add('open');
-        cartOverlay.classList.add('active');
-        renderizarCarrito(); // Construir la lista visual
-    });
-}
-
-// 2. Cerrar el carrito
-function cerrarCarrito() {
-    cartSidebar.classList.remove('open');
-    cartOverlay.classList.remove('active');
-}
-if(closeCartBtn) closeCartBtn.addEventListener('click', cerrarCarrito);
-if(cartOverlay) cartOverlay.addEventListener('click', cerrarCarrito);
-
-// 3. Dibujar los productos en la barra lateral
-function renderizarCarrito() {
-    cartItemsContainer.innerHTML = ''; // Limpiamos lo viejo
-    let total = 0;
-
-    if(carrito.length === 0) {
-        cartItemsContainer.innerHTML = '<p>Tu carrito está vacío 😔</p>';
-    } else {
-        carrito.forEach((producto, index) => {
-            // Limpiamos los símbolos para poder hacer la suma matemática
-            let precioNumerico = parseFloat(producto.precio.replace(/[^0-9.-]+/g,""));
-            if(!isNaN(precioNumerico)) {
-                total += precioNumerico;
-            }
-
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'cart-item';
-            itemDiv.innerHTML = `
-                <div class="cart-item-info">
-                    <h4>${producto.nombre}</h4>
-                    <span class="cart-item-price">${producto.precio}</span>
-                </div>
-                <button onclick="eliminarDelCarrito(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size: 1.2rem;">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            `;
-            cartItemsContainer.appendChild(itemDiv);
-        });
-    }
-    cartTotalElement.textContent = `$${total.toFixed(2)}`;
-}
-
-// 4. Eliminar producto individual
-window.eliminarDelCarrito = function(index) {
-    carrito.splice(index, 1);
-    localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
-    actualizarContadorCarrito(); // Actualizamos el número de arriba
-    renderizarCarrito(); // Volvemos a dibujar la lista
-};
