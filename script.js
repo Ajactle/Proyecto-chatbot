@@ -67,14 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. LÓGICA DEL CHATBOT (HACEMOS FUNCIONES GLOBALES)
     // ==========================================
    // En lugar de function toggleChat() { ... }
-window.toggleChat = function() {
-    const chatWindow = document.getElementById('chat-window');
-    if (chatWindow) {
-        chatWindow.classList.toggle('hidden');
-    }
-};
+    window.toggleChat = function() {
+        const chatWindow = document.getElementById('chat-window');
+        if (chatWindow) {
+            chatWindow.classList.toggle('hidden');
+        }
+    };
 
-  window.sendMessage = async function() {
+    window.sendMessage = async function() {
         const inputField = document.getElementById('user-input');
         const chatBody = document.getElementById('chat-body');
         if (!inputField || !chatBody) return;
