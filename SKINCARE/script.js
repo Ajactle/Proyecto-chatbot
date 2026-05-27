@@ -158,6 +158,7 @@ function agregarAlCarrito(nombre, precio, imagen) {
         itemExistente.cantidad += 1;
     } else {
         carrito.push({ nombre, precio, imagen, cantidad: 1 });
+        console.log("¡Intento de agregar:", nombre, precio); // <--- ESTA LÍNEA ES EL ESPÍA
     }
     
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
@@ -357,4 +358,27 @@ botonesLeerMas.forEach(boton => {
     boton.addEventListener('click', () => {
         alert("¡Próximamente! ✨ Estamos preparando este artículo con los mejores tips de belleza para ti.");
     });
+});
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- LÓGICA DEL BUSCADOR ---
+    const searchForm = document.querySelector('.search-form');
+    const searchInput = document.querySelector('.search-form input[type="search"]');
+    if (searchForm && searchInput) {
+        // ... aquí va tu código de búsqueda ...
+    }
+
+    // --- LÓGICA DEL CARRITO (EL MÁS CRÍTICO) ---
+    const cartSidebar = document.getElementById('cart-sidebar');
+    const cartOverlay = document.getElementById('cart-overlay');
+    
+    // Solo ejecutamos la lógica si el carrito existe en esta página
+    if (cartSidebar && cartOverlay) {
+        // ... aquí va tu lógica de abrir/cerrar carrito ...
+    }
+
+    // --- LÓGICA DEL CHATBOT ---
+    const chatWindow = document.getElementById('chat-window');
+    // ... Asegúrate de que todas tus funciones estén dentro de este bloque ...
+
 });
