@@ -157,3 +157,111 @@ if (userInputField) {
         }
     });
 }
+
+/* ==========================================
+   4. LÓGICA DEL CARRITO DE COMPRAS
+   ========================================== */
+// Leemos si ya hay productos guardados en el almacenamiento del navegador
+let carrito = JSON.parse(localStorage.getItem('carrito_holabonita')) || [];
+const cartCounter = document.querySelector('.content-shopping-cart .number');
+
+function actualizarContadorCarrito() {
+    if(cartCounter) {
+        cartCounter.textContent = `(${carrito.length})`;
+    }
+}
+actualizarContadorCarrito(); // Actualizar al cargar la página
+
+function agregarAlCarrito(nombre, precio) {
+    carrito.push({ nombre, precio });
+    localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
+    actualizarContadorCarrito();
+    alert(`¡Increíble! Hemos añadido "${nombre}" a tu carrito.`);
+}
+
+// Botones directos de "Agregar al carrito" en las tarjetas
+const botonesCarrito = document.querySelectorAll('.card-product .add-cart');
+botonesCarrito.forEach(boton => {
+    boton.addEventListener('click', (e) => {
+        const card = e.target.closest('.card-product');
+        const titulo = card.querySelector('h3').textContent;
+        const precio = card.querySelector('.price').childNodes[0].textContent.trim();
+        agregarAlCarrito(titulo, precio);
+    });
+});
+
+/* ==========================================
+   5. LÓGICA DE LA VENTANA EMERGENTE (MODAL)
+   ========================================== */
+const modal = document.getElementById('product-modal');
+const btnCloseModal = document.querySelector('.close-modal');
+const modalImg = document.getElementById('modal-img');
+const modalTitle = document.getElementById('modal-title');
+const modalPrice = document.getElementById('modal-price');
+const btnModalAddCart = document.getElementById('modal-add-cart');
+
+// Seleccionamos los iconos del "ojito" en tus tarjetas para abrir el modal
+const botonesVerMas = document.querySelectorAll('.button-group span:first-child');
+
+botonesVerMas.forEach(boton => {
+    boton.addEventListener('click', (e) => {
+        const card = e.target.closest('.card-product');
+        // Extraer info de la tarjeta
+        const titulo = card.querySelector('h3').textContent;
+        const imagen = card.querySelector('img').src;
+        const precio = card.querySelector('.price').childNodes[0].textContent.trim();
+
+        // Poner la info dentro de la ventana emergente
+        modalTitle.textContent = titulo;
+        modalImg.src = imagen;
+        modalPrice.textContent = precio;
+
+        // Mostrar el modal
+        modal.classList.add('active');
+    });
+});
+
+// Cerrar ventana en la X
+if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', () => modal.classList.remove('active'));
+}
+// Cerrar ventana dando clic afuera
+window.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('active');
+});
+// Añadir al carrito desde el botón grandote del Modal
+if (btnModalAddCart) {
+    btnModalAddCart.addEventListener('click', () => {
+        agregarAlCarrito(modalTitle.textContent, modalPrice.textContent);
+        modal.classList.remove('active');
+    });
+}
+
+/* ==========================================
+   6. LÓGICA DE LOS FILTROS (Destacados, etc)
+   ========================================== */
+const filterOptions = document.querySelectorAll('.container-options span');
+// Seleccionamos solo las tarjetas de la sección "Mejores Productos"
+const productsList = document.querySelectorAll('.top-products .card-product');
+
+filterOptions.forEach((option, index) => {
+    option.addEventListener('click', () => {
+        // Quitar el color rosita (clase active) a todos y ponérselo al que dimos clic
+        filterOptions.forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+
+        // Simulación de Filtros: Ocultar y mostrar tarjetas
+        productsList.forEach((product, i) => {
+            product.style.display = ''; // Mostrar todos por defecto
+            
+            // Si elige "Más recientes", ocultamos los 2 primeros
+            if (index === 1 && i < 2) {
+                product.style.display = 'none';
+            }
+            // Si elige "Mejores Vendidos", ocultamos los 2 últimos
+            else if (index === 2 && i >= 2) {
+                product.style.display = 'none';
+            }
+        });
+    });
+});
