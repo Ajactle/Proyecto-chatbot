@@ -265,3 +265,13 @@ filterOptions.forEach((option, index) => {
         });
     });
 });
+/* ==========================================
+   7. LÓGICA DE LOS BOTONES "LEER MÁS"
+   ========================================== */
+const botonesLeerMas = document.querySelectorAll('.btn-read-more');
+
+botonesLeerMas.forEach(boton => {
+    boton.addEventListener('click', () => {
+        alert("¡Próximamente! ✨ Estamos preparando este artículo con los mejores tips de belleza para ti.");
+    });
+});
