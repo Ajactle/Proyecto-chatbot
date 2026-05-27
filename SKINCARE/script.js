@@ -4,14 +4,11 @@
 const searchForm = document.querySelector('.search-form');
 const searchInput = document.querySelector('.search-form input[type="search"]');
 
-// Solo ejecutamos esto si la página tiene un buscador
 if (searchForm && searchInput) {
-    // Evitamos que la página se recargue al dar "Enter"
     searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
     });
 
-    // Filtramos mientras el usuario escribe
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         const products = document.querySelectorAll('.card-product');
@@ -36,7 +33,6 @@ if (searchForm && searchInput) {
 const emailInput = document.querySelector('.newsletter input[type="email"]');
 const subscribeBtn = document.querySelector('.newsletter button');
 
-// Solo ejecutamos esto si la página tiene el apartado de newsletter
 if (emailInput && subscribeBtn) {
     subscribeBtn.addEventListener('click', () => {
         const email = emailInput.value.trim();
@@ -64,8 +60,6 @@ if (emailInput && subscribeBtn) {
 /* ==========================================
    3. LÓGICA DEL CHATBOT (CON NETLIFY)
    ========================================== */
-
-// Función para abrir y cerrar la ventana del chat
 function toggleChat() {
     const chatWindow = document.getElementById('chat-window');
     if (chatWindow) {
@@ -73,7 +67,6 @@ function toggleChat() {
     }
 }
 
-// Función principal para enviar el mensaje a tu servidor en Netlify
 async function sendMessage() {
     const inputField = document.getElementById('user-input');
     const chatBody = document.getElementById('chat-body');
@@ -81,26 +74,21 @@ async function sendMessage() {
 
     if (messageText === '') return;
 
-    // Mostrar el mensaje del usuario en el chat
     const userMsg = document.createElement('p');
     userMsg.className = 'user-msg'; 
     userMsg.innerHTML = `<strong>Tú:</strong> ${messageText}`;
     chatBody.appendChild(userMsg);
 
-    // Limpiar la barra de texto
     inputField.value = '';
 
-    // Mostrar indicador de "Escribiendo..."
     const botThinking = document.createElement('p');
     botThinking.className = 'bot-msg';
     botThinking.innerHTML = `<em>Escribiendo...</em>`;
     chatBody.appendChild(botThinking);
 
-    // Bajar el scroll al último mensaje
     chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
-        // Enviar la petición a tu archivo seguro en Netlify
         const response = await fetch('/.netlify/functions/chat', {
             method: 'POST',
             headers: {
@@ -113,13 +101,10 @@ async function sendMessage() {
 
         const data = await response.json();
 
-        // Borrar el texto de "Escribiendo..."
         chatBody.removeChild(botThinking);
 
-        // Extraer y mostrar la respuesta de Gemini
         if (data.candidates && data.candidates.length > 0) {
             const botReplyText = data.candidates[0].content.parts[0].text;
-            
             const botMsg = document.createElement('p');
             botMsg.className = 'bot-msg';
             botMsg.innerHTML = `<strong>Hola Bonita ✨:</strong><br>${botReplyText.replace(/\n/g, '<br>')}`;
@@ -131,12 +116,10 @@ async function sendMessage() {
     } catch (error) {
         console.error("Error al conectar con la API:", error);
         
-        // Si el mensaje de "Escribiendo..." sigue ahí, lo quitamos
         if (chatBody.contains(botThinking)) {
             chatBody.removeChild(botThinking);
         }
         
-        // Mensaje de error para el usuario (¡Ya no dice Vercel!)
         const errorMsg = document.createElement('p');
         errorMsg.className = 'bot-msg';
         errorMsg.style.color = 'red';
@@ -144,11 +127,9 @@ async function sendMessage() {
         chatBody.appendChild(errorMsg);
     }
 
-    // Volver a bajar el scroll
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// Escuchar si el usuario presiona "Enter" en lugar de hacer clic en enviar
 const userInputField = document.getElementById('user-input');
 if (userInputField) {
     userInputField.addEventListener('keypress', function (e) {
