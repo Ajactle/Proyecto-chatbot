@@ -138,8 +138,9 @@ if (userInputField) {
         }
     });
 }
+
 /* ==========================================
-   4 Y 8. LÓGICA COMPLETA DEL CARRITO DE COMPRAS (IMÁGENES Y CANTIDAD)
+   4 Y 8. LÓGICA DEL CARRITO DE COMPRAS PREMIUM
    ========================================== */
 let carrito = JSON.parse(localStorage.getItem('carrito_holabonita')) || [];
 const cartCounter = document.querySelector('.content-shopping-cart .number');
@@ -150,42 +151,39 @@ const headerCartIcon = document.querySelector('.container-user');
 const cartItemsContainer = document.getElementById('cart-items');
 const cartTotalElement = document.getElementById('cart-total');
 
-// Agregar o sumar producto al carrito
 function agregarAlCarrito(nombre, precio, imagen) {
-    // Revisamos si el producto ya está en el carrito
     const itemExistente = carrito.find(item => item.nombre === nombre);
     
     if (itemExistente) {
-        itemExistente.cantidad += 1; // Si ya existe, le sumamos 1
+        itemExistente.cantidad += 1;
     } else {
-        // Si es nuevo, lo guardamos con su imagen y cantidad 1
         carrito.push({ nombre, precio, imagen, cantidad: 1 });
+        console.log("¡Intento de agregar:", nombre, precio); // <--- ESTA LÍNEA ES EL ESPÍA
     }
     
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
-    renderizarCarrito(); // Actualizamos lo visual al instante
+    renderizarCarrito(); 
     
-    // Mostramos el carrito automáticamente para que el cliente vea que se agregó
-    cartSidebar.classList.add('open');
-    cartOverlay.classList.add('active');
+    // Abre el carrito para mostrar el nuevo producto
+    if(cartSidebar && cartOverlay) {
+        cartSidebar.classList.add('open');
+        cartOverlay.classList.add('active');
+    }
 }
 
-// Botones directos de "Comprar +" en las tarjetas
 const botonesCarrito = document.querySelectorAll('.card-product .add-cart');
 botonesCarrito.forEach(boton => {
     boton.addEventListener('click', (e) => {
         const card = e.target.closest('.card-product');
         const titulo = card.querySelector('h3').textContent;
         const precio = card.querySelector('.price').childNodes[0].textContent.trim();
-        const imagen = card.querySelector('img').src; // Capturamos la foto
+        const imagen = card.querySelector('img').src; 
         agregarAlCarrito(titulo, precio, imagen);
     });
 });
 
-// Modificación para el botón de la Ventana Emergente (Modal)
 const btnModalAddCart = document.getElementById('modal-add-cart');
 if (btnModalAddCart) {
-    // Nos aseguramos de quitar eventos anteriores para que no se dupliquen clics
     const nuevoBtnModal = btnModalAddCart.cloneNode(true);
     btnModalAddCart.parentNode.replaceChild(nuevoBtnModal, btnModalAddCart);
     
@@ -198,7 +196,7 @@ if (btnModalAddCart) {
     });
 }
 
-// Dibujar el carrito lateral
+// Dibujar el carrito lateral estilo Premium
 function renderizarCarrito() {
     if(!cartItemsContainer) return;
     
@@ -207,12 +205,12 @@ function renderizarCarrito() {
     let totalArticulos = 0;
 
     if(carrito.length === 0) {
-        cartItemsContainer.innerHTML = '<p>Tu carrito está vacío 😔</p>';
+        cartItemsContainer.innerHTML = '<p style="text-align:center; font-weight:bold; margin-top:20px;">Tu carrito está vacío 😔</p>';
     } else {
         carrito.forEach((producto, index) => {
             let precioNumerico = parseFloat(producto.precio.replace(/[^0-9.-]+/g,""));
-            let cantidad = producto.cantidad || 1; // Por si tenías productos viejos guardados
-            let imagenSrc = producto.imagen || 'https://via.placeholder.com/60';
+            let cantidad = producto.cantidad || 1;
+            let imagenSrc = producto.imagen || 'https://via.placeholder.com/90';
 
             if(!isNaN(precioNumerico)) {
                 totalPrecio += (precioNumerico * cantidad);
@@ -220,62 +218,144 @@ function renderizarCarrito() {
             totalArticulos += cantidad;
 
             const itemDiv = document.createElement('div');
-            itemDiv.className = 'cart-item';
+            itemDiv.className = 'cart-item-new';
             itemDiv.innerHTML = `
-                <img src="${imagenSrc}" alt="${producto.nombre}" class="cart-item-img">
-                <div class="cart-item-info">
-                    <h4>${producto.nombre}</h4>
-                    <span class="cart-item-price">${producto.precio}</span>
-                    <div class="cart-quantity">
+                <img src="${imagenSrc}" alt="${producto.nombre}" class="cart-item-img-new">
+                <div class="cart-item-details">
+                    <div>
+                        <div class="item-brand">HOLA BONITA</div>
+                        <div class="item-name">${producto.nombre}</div>
+                    </div>
+                    <div class="item-price-qty">
+                        <span class="item-price">${producto.precio}</span>
+                        <span class="item-qty-text">Cantidad ${cantidad}</span>
+                    </div>
+                </div>
+                <div class="cart-controls-wrapper">
+                    <span class="controls-title">CANTIDAD</span>
+                    <div class="cart-quantity-new">
                         <button onclick="cambiarCantidad(${index}, -1)">-</button>
                         <span>${cantidad}</span>
                         <button onclick="cambiarCantidad(${index}, 1)">+</button>
                     </div>
+                    <button onclick="eliminarDelCarrito(${index})" class="cart-remove-link">Remover</button>
                 </div>
-                <button onclick="eliminarDelCarrito(${index})" class="cart-delete-btn" title="Eliminar">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
             `;
             cartItemsContainer.appendChild(itemDiv);
         });
     }
     
-    if(cartTotalElement) cartTotalElement.textContent = `$${totalPrecio.toFixed(2)}`;
+    if(cartTotalElement) cartTotalElement.textContent = `$${totalPrecio.toLocaleString('es-MX', {minimumFractionDigits: 2})}`;
+    
+    const summaryCount = document.getElementById('cart-count-summary');
+    if(summaryCount) summaryCount.textContent = totalArticulos;
+    
     if(cartCounter) cartCounter.textContent = `(${totalArticulos})`;
 }
 
-// Sumar o restar cantidades desde el carrito lateral
 window.cambiarCantidad = function(index, cambio) {
     if(carrito[index].cantidad + cambio > 0) {
         carrito[index].cantidad += cambio;
     } else {
-        carrito.splice(index, 1); // Si baja de 1, lo borramos de la lista
+        carrito.splice(index, 1); 
     }
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
     renderizarCarrito();
 };
 
-// Eliminar producto individual
 window.eliminarDelCarrito = function(index) {
     carrito.splice(index, 1);
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
     renderizarCarrito(); 
 };
 
-// Abrir y cerrar el carrito lateral
 if(headerCartIcon) {
     headerCartIcon.addEventListener('click', () => {
-        cartSidebar.classList.add('open');
-        cartOverlay.classList.add('active');
-        renderizarCarrito(); 
+        if(cartSidebar && cartOverlay) {
+            cartSidebar.classList.add('open');
+            cartOverlay.classList.add('active');
+            renderizarCarrito(); 
+        }
     });
 }
 function cerrarCarrito() {
-    cartSidebar.classList.remove('open');
-    cartOverlay.classList.remove('active');
+    if(cartSidebar && cartOverlay) {
+        cartSidebar.classList.remove('open');
+        cartOverlay.classList.remove('active');
+    }
 }
 if(closeCartBtn) closeCartBtn.addEventListener('click', cerrarCarrito);
 if(cartOverlay) cartOverlay.addEventListener('click', cerrarCarrito);
 
-// Dibujamos el carrito la primera vez que carga la página
 renderizarCarrito();
+
+/* ==========================================
+   5. LÓGICA DE LA VENTANA EMERGENTE (MODAL)
+   ========================================== */
+const modal = document.getElementById('product-modal');
+const btnCloseModal = document.querySelector('.close-modal');
+const modalImg = document.getElementById('modal-img');
+const modalTitle = document.getElementById('modal-title');
+const modalPrice = document.getElementById('modal-price');
+
+const botonesVerMas = document.querySelectorAll('.button-group span:first-child');
+
+botonesVerMas.forEach(boton => {
+    boton.addEventListener('click', (e) => {
+        const card = e.target.closest('.card-product');
+        const titulo = card.querySelector('h3').textContent;
+        const imagen = card.querySelector('img').src;
+        const precio = card.querySelector('.price').childNodes[0].textContent.trim();
+
+        if(modalTitle) modalTitle.textContent = titulo;
+        if(modalImg) modalImg.src = imagen;
+        if(modalPrice) modalPrice.textContent = precio;
+
+        if(modal) modal.classList.add('active');
+    });
+});
+
+if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', () => {
+        if(modal) modal.classList.remove('active');
+    });
+}
+
+window.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('active');
+});
+
+/* ==========================================
+   6. LÓGICA DE LOS FILTROS (Destacados, etc)
+   ========================================== */
+const filterOptions = document.querySelectorAll('.container-options span');
+const productsList = document.querySelectorAll('.top-products .card-product');
+
+filterOptions.forEach((option, index) => {
+    option.addEventListener('click', () => {
+        filterOptions.forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+
+        productsList.forEach((product, i) => {
+            product.style.display = ''; 
+            
+            if (index === 1 && i < 2) {
+                product.style.display = 'none';
+            }
+            else if (index === 2 && i >= 2) {
+                product.style.display = 'none';
+            }
+        });
+    });
+});
+
+/* ==========================================
+   7. LÓGICA DE LOS BOTONES "LEER MÁS"
+   ========================================== */
+const botonesLeerMas = document.querySelectorAll('.btn-read-more');
+
+botonesLeerMas.forEach(boton => {
+    boton.addEventListener('click', () => {
+        alert("¡Próximamente! ✨ Estamos preparando este artículo con los mejores tips de belleza para ti.");
+    });
+});
