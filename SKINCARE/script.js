@@ -159,7 +159,7 @@ if (userInputField) {
 }
 
 /* ==========================================
-   4 Y 8. LÓGICA COMPLETA DEL CARRITO DE COMPRAS (IMÁGENES Y CANTIDAD)
+   4 Y 8. LÓGICA DEL CARRITO DE COMPRAS PREMIUM
    ========================================== */
 let carrito = JSON.parse(localStorage.getItem('carrito_holabonita')) || [];
 const cartCounter = document.querySelector('.content-shopping-cart .number');
@@ -170,42 +170,38 @@ const headerCartIcon = document.querySelector('.container-user');
 const cartItemsContainer = document.getElementById('cart-items');
 const cartTotalElement = document.getElementById('cart-total');
 
-// Agregar o sumar producto al carrito
 function agregarAlCarrito(nombre, precio, imagen) {
-    // Revisamos si el producto ya está en el carrito
     const itemExistente = carrito.find(item => item.nombre === nombre);
     
     if (itemExistente) {
-        itemExistente.cantidad += 1; // Si ya existe, le sumamos 1
+        itemExistente.cantidad += 1;
     } else {
-        // Si es nuevo, lo guardamos con su imagen y cantidad 1
         carrito.push({ nombre, precio, imagen, cantidad: 1 });
     }
     
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
-    renderizarCarrito(); // Actualizamos lo visual al instante
+    renderizarCarrito(); 
     
-    // Mostramos el carrito automáticamente para que el cliente vea que se agregó
-    cartSidebar.classList.add('open');
-    cartOverlay.classList.add('active');
+    // Abre el carrito para mostrar el nuevo producto
+    if(cartSidebar && cartOverlay) {
+        cartSidebar.classList.add('open');
+        cartOverlay.classList.add('active');
+    }
 }
 
-// Botones directos de "Comprar +" en las tarjetas
 const botonesCarrito = document.querySelectorAll('.card-product .add-cart');
 botonesCarrito.forEach(boton => {
     boton.addEventListener('click', (e) => {
         const card = e.target.closest('.card-product');
         const titulo = card.querySelector('h3').textContent;
         const precio = card.querySelector('.price').childNodes[0].textContent.trim();
-        const imagen = card.querySelector('img').src; // Capturamos la foto
+        const imagen = card.querySelector('img').src; 
         agregarAlCarrito(titulo, precio, imagen);
     });
 });
 
-// Modificación para el botón de la Ventana Emergente (Modal)
 const btnModalAddCart = document.getElementById('modal-add-cart');
 if (btnModalAddCart) {
-    // Nos aseguramos de quitar eventos anteriores para que no se dupliquen clics
     const nuevoBtnModal = btnModalAddCart.cloneNode(true);
     btnModalAddCart.parentNode.replaceChild(nuevoBtnModal, btnModalAddCart);
     
@@ -218,7 +214,7 @@ if (btnModalAddCart) {
     });
 }
 
-// Dibujar el carrito lateral
+// Dibujar el carrito lateral estilo Premium
 function renderizarCarrito() {
     if(!cartItemsContainer) return;
     
@@ -227,12 +223,12 @@ function renderizarCarrito() {
     let totalArticulos = 0;
 
     if(carrito.length === 0) {
-        cartItemsContainer.innerHTML = '<p>Tu carrito está vacío 😔</p>';
+        cartItemsContainer.innerHTML = '<p style="text-align:center; font-weight:bold; margin-top:20px;">Tu carrito está vacío 😔</p>';
     } else {
         carrito.forEach((producto, index) => {
             let precioNumerico = parseFloat(producto.precio.replace(/[^0-9.-]+/g,""));
-            let cantidad = producto.cantidad || 1; // Por si tenías productos viejos guardados
-            let imagenSrc = producto.imagen || 'https://via.placeholder.com/60';
+            let cantidad = producto.cantidad || 1;
+            let imagenSrc = producto.imagen || 'https://via.placeholder.com/90';
 
             if(!isNaN(precioNumerico)) {
                 totalPrecio += (precioNumerico * cantidad);
@@ -240,65 +236,77 @@ function renderizarCarrito() {
             totalArticulos += cantidad;
 
             const itemDiv = document.createElement('div');
-            itemDiv.className = 'cart-item';
+            itemDiv.className = 'cart-item-new';
             itemDiv.innerHTML = `
-                <img src="${imagenSrc}" alt="${producto.nombre}" class="cart-item-img">
-                <div class="cart-item-info">
-                    <h4>${producto.nombre}</h4>
-                    <span class="cart-item-price">${producto.precio}</span>
-                    <div class="cart-quantity">
+                <img src="${imagenSrc}" alt="${producto.nombre}" class="cart-item-img-new">
+                <div class="cart-item-details">
+                    <div>
+                        <div class="item-brand">HOLA BONITA</div>
+                        <div class="item-name">${producto.nombre}</div>
+                    </div>
+                    <div class="item-price-qty">
+                        <span class="item-price">${producto.precio}</span>
+                        <span class="item-qty-text">Cantidad ${cantidad}</span>
+                    </div>
+                </div>
+                <div class="cart-controls-wrapper">
+                    <span class="controls-title">CANTIDAD</span>
+                    <div class="cart-quantity-new">
                         <button onclick="cambiarCantidad(${index}, -1)">-</button>
                         <span>${cantidad}</span>
                         <button onclick="cambiarCantidad(${index}, 1)">+</button>
                     </div>
+                    <button onclick="eliminarDelCarrito(${index})" class="cart-remove-link">Remover</button>
                 </div>
-                <button onclick="eliminarDelCarrito(${index})" class="cart-delete-btn" title="Eliminar">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
             `;
             cartItemsContainer.appendChild(itemDiv);
         });
     }
     
-    if(cartTotalElement) cartTotalElement.textContent = `$${totalPrecio.toFixed(2)}`;
+    if(cartTotalElement) cartTotalElement.textContent = `$${totalPrecio.toLocaleString('es-MX', {minimumFractionDigits: 2})}`;
+    
+    const summaryCount = document.getElementById('cart-count-summary');
+    if(summaryCount) summaryCount.textContent = totalArticulos;
+    
     if(cartCounter) cartCounter.textContent = `(${totalArticulos})`;
 }
 
-// Sumar o restar cantidades desde el carrito lateral
 window.cambiarCantidad = function(index, cambio) {
     if(carrito[index].cantidad + cambio > 0) {
         carrito[index].cantidad += cambio;
     } else {
-        carrito.splice(index, 1); // Si baja de 1, lo borramos de la lista
+        carrito.splice(index, 1); 
     }
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
     renderizarCarrito();
 };
 
-// Eliminar producto individual
 window.eliminarDelCarrito = function(index) {
     carrito.splice(index, 1);
     localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
     renderizarCarrito(); 
 };
 
-// Abrir y cerrar el carrito lateral
 if(headerCartIcon) {
     headerCartIcon.addEventListener('click', () => {
-        cartSidebar.classList.add('open');
-        cartOverlay.classList.add('active');
-        renderizarCarrito(); 
+        if(cartSidebar && cartOverlay) {
+            cartSidebar.classList.add('open');
+            cartOverlay.classList.add('active');
+            renderizarCarrito(); 
+        }
     });
 }
 function cerrarCarrito() {
-    cartSidebar.classList.remove('open');
-    cartOverlay.classList.remove('active');
+    if(cartSidebar && cartOverlay) {
+        cartSidebar.classList.remove('open');
+        cartOverlay.classList.remove('active');
+    }
 }
 if(closeCartBtn) closeCartBtn.addEventListener('click', cerrarCarrito);
 if(cartOverlay) cartOverlay.addEventListener('click', cerrarCarrito);
 
-// Dibujamos el carrito la primera vez que carga la página
 renderizarCarrito();
+
 /* ==========================================
    5. LÓGICA DE LA VENTANA EMERGENTE (MODAL)
    ========================================== */
@@ -307,73 +315,58 @@ const btnCloseModal = document.querySelector('.close-modal');
 const modalImg = document.getElementById('modal-img');
 const modalTitle = document.getElementById('modal-title');
 const modalPrice = document.getElementById('modal-price');
-const btnModalAddCart = document.getElementById('modal-add-cart');
 
-// Seleccionamos los iconos del "ojito" en tus tarjetas para abrir el modal
 const botonesVerMas = document.querySelectorAll('.button-group span:first-child');
 
 botonesVerMas.forEach(boton => {
     boton.addEventListener('click', (e) => {
         const card = e.target.closest('.card-product');
-        // Extraer info de la tarjeta
         const titulo = card.querySelector('h3').textContent;
         const imagen = card.querySelector('img').src;
         const precio = card.querySelector('.price').childNodes[0].textContent.trim();
 
-        // Poner la info dentro de la ventana emergente
-        modalTitle.textContent = titulo;
-        modalImg.src = imagen;
-        modalPrice.textContent = precio;
+        if(modalTitle) modalTitle.textContent = titulo;
+        if(modalImg) modalImg.src = imagen;
+        if(modalPrice) modalPrice.textContent = precio;
 
-        // Mostrar el modal
-        modal.classList.add('active');
+        if(modal) modal.classList.add('active');
     });
 });
 
-// Cerrar ventana en la X
 if (btnCloseModal) {
-    btnCloseModal.addEventListener('click', () => modal.classList.remove('active'));
+    btnCloseModal.addEventListener('click', () => {
+        if(modal) modal.classList.remove('active');
+    });
 }
-// Cerrar ventana dando clic afuera
+
 window.addEventListener('click', (e) => {
     if (e.target === modal) modal.classList.remove('active');
 });
-// Añadir al carrito desde el botón grandote del Modal
-if (btnModalAddCart) {
-    btnModalAddCart.addEventListener('click', () => {
-        agregarAlCarrito(modalTitle.textContent, modalPrice.textContent);
-        modal.classList.remove('active');
-    });
-}
 
 /* ==========================================
    6. LÓGICA DE LOS FILTROS (Destacados, etc)
    ========================================== */
 const filterOptions = document.querySelectorAll('.container-options span');
-// Seleccionamos solo las tarjetas de la sección "Mejores Productos"
 const productsList = document.querySelectorAll('.top-products .card-product');
 
 filterOptions.forEach((option, index) => {
     option.addEventListener('click', () => {
-        // Quitar el color rosita (clase active) a todos y ponérselo al que dimos clic
         filterOptions.forEach(opt => opt.classList.remove('active'));
         option.classList.add('active');
 
-        // Simulación de Filtros: Ocultar y mostrar tarjetas
         productsList.forEach((product, i) => {
-            product.style.display = ''; // Mostrar todos por defecto
+            product.style.display = ''; 
             
-            // Si elige "Más recientes", ocultamos los 2 primeros
             if (index === 1 && i < 2) {
                 product.style.display = 'none';
             }
-            // Si elige "Mejores Vendidos", ocultamos los 2 últimos
             else if (index === 2 && i >= 2) {
                 product.style.display = 'none';
             }
         });
     });
 });
+
 /* ==========================================
    7. LÓGICA DE LOS BOTONES "LEER MÁS"
    ========================================== */
