@@ -1200,3 +1200,102 @@ card-category {
     align-items: center;
   }
 }
+/* ====================================
+   ESTILOS DEL CARRITO LATERAL
+   ==================================== */
+.cart-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 100%;
+  max-width: 400px;
+  height: 100vh;
+  background-color: #fff;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  transition: right 0.4s ease;
+  display: flex;
+  flex-direction: column;
+}
+.cart-sidebar.open {
+  right: 0;
+}
+.cart-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cart-header h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+.close-cart {
+  font-size: 30px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #333;
+}
+.close-cart:hover {
+  color: #b85c7b;
+}
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+.cart-item-info h4 {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+.cart-item-price {
+  color: #b85c7b;
+  font-weight: bold;
+}
+.cart-footer {
+  padding: 20px;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+.btn-checkout {
+  width: 100%;
+  padding: 15px;
+  background-color: #333;
+  color: white;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.btn-checkout:hover {
+  background-color: #b85c7b;
+}
+.cart-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  visibility: hidden;
+  opacity: 0;
+  transition: 0.3s;
+}
+.cart-overlay.active {
+  visibility: visible;
+  opacity: 1;
+}

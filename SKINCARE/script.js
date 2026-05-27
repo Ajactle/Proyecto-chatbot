@@ -275,3 +275,69 @@ botonesLeerMas.forEach(boton => {
         alert("¡Próximamente! ✨ Estamos preparando este artículo con los mejores tips de belleza para ti.");
     });
 });
+/* ==========================================
+   8. LÓGICA DEL CARRITO LATERAL VISUAL
+   ========================================== */
+const cartSidebar = document.getElementById('cart-sidebar');
+const cartOverlay = document.getElementById('cart-overlay');
+const closeCartBtn = document.getElementById('close-cart');
+const headerCartIcon = document.querySelector('.container-user'); // El botón de arriba
+const cartItemsContainer = document.getElementById('cart-items');
+const cartTotalElement = document.getElementById('cart-total');
+
+// 1. Abrir el carrito
+if(headerCartIcon) {
+    headerCartIcon.addEventListener('click', () => {
+        cartSidebar.classList.add('open');
+        cartOverlay.classList.add('active');
+        renderizarCarrito(); // Construir la lista visual
+    });
+}
+
+// 2. Cerrar el carrito
+function cerrarCarrito() {
+    cartSidebar.classList.remove('open');
+    cartOverlay.classList.remove('active');
+}
+if(closeCartBtn) closeCartBtn.addEventListener('click', cerrarCarrito);
+if(cartOverlay) cartOverlay.addEventListener('click', cerrarCarrito);
+
+// 3. Dibujar los productos en la barra lateral
+function renderizarCarrito() {
+    cartItemsContainer.innerHTML = ''; // Limpiamos lo viejo
+    let total = 0;
+
+    if(carrito.length === 0) {
+        cartItemsContainer.innerHTML = '<p>Tu carrito está vacío 😔</p>';
+    } else {
+        carrito.forEach((producto, index) => {
+            // Limpiamos los símbolos para poder hacer la suma matemática
+            let precioNumerico = parseFloat(producto.precio.replace(/[^0-9.-]+/g,""));
+            if(!isNaN(precioNumerico)) {
+                total += precioNumerico;
+            }
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cart-item';
+            itemDiv.innerHTML = `
+                <div class="cart-item-info">
+                    <h4>${producto.nombre}</h4>
+                    <span class="cart-item-price">${producto.precio}</span>
+                </div>
+                <button onclick="eliminarDelCarrito(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size: 1.2rem;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            `;
+            cartItemsContainer.appendChild(itemDiv);
+        });
+    }
+    cartTotalElement.textContent = `$${total.toFixed(2)}`;
+}
+
+// 4. Eliminar producto individual
+window.eliminarDelCarrito = function(index) {
+    carrito.splice(index, 1);
+    localStorage.setItem('carrito_holabonita', JSON.stringify(carrito));
+    actualizarContadorCarrito(); // Actualizamos el número de arriba
+    renderizarCarrito(); // Volvemos a dibujar la lista
+};
