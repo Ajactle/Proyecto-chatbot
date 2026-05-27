@@ -1,5 +1,5 @@
 // FORMATO EXCLUSIVO PARA NETLIFY FUNCTIONS
-exports.handler = async function(event, context) {
+export async function handler(event, context) {
     // Solo permitimos peticiones POST
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Método no permitido' };
@@ -68,4 +68,4 @@ exports.handler = async function(event, context) {
             body: JSON.stringify({ error: 'Error al conectar con la IA' })
         };
     }
-};
+}
