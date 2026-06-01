@@ -1,72 +1,50 @@
-// FORMATO EXCLUSIVO PARA NETLIFY FUNCTIONS
-export async function handler(event, context) {
-    // Solo permitimos peticiones POST
+exports.handler = async function(event, context) {
+    // 1. Validar si es POST
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Método no permitido' };
     }
 
     try {
-        // En Netlify, los datos llegan como texto, así que los convertimos a JSON
+        // 2. Verificar si hay cuerpo
+        if (!event.body) {
+            console.error("Error: El cuerpo de la petición está vacío");
+            return { statusCode: 400, body: "Cuerpo vacío" };
+        }
+
         const body = JSON.parse(event.body);
         const mensajeUsuario = body.mensajeUsuario;
 
-        // Tomamos tu clave secreta de las variables de entorno de Netlify
+        // 3. Verificar API Key
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        if (!GEMINI_API_KEY) {
+            console.error("ERROR CRÍTICO: GEMINI_API_KEY no encontrada en Netlify");
+            return { statusCode: 500, body: "Error de configuración: API Key faltante" };
+        }
 
-       // LA MAGIA: Aquí le damos la memoria de tu catálogo a la IA
-        const promptDelSistema = `
-        Eres el asistente virtual experto en belleza y servicio al cliente de la tienda de skincare 'Hola Bonita'. Eres amable, usas emojis y ayudas a los clientes con sus compras y dudas.
-        
-        INFORMACIÓN DE LA TIENDA (Reglas estrictas para responder):
-        - Ubicación: Estamos ubicados en Los Reyes, Veracruz.
-        - Envíos: Tenemos envío gratuito a nivel mundial en pedidos superiores a $600.
-        - Reembolsos/Garantía: Contamos con contrareembolso y una garantía del 100% de devolución de dinero.
-        - Novedades: Para enterarse de las novedades y nuevas colecciones, invita al cliente a suscribirse a nuestro boletín informativo en la página.
-        - Regalos: Ofrecemos tarjetas de regalo especiales que incluyen bonos con regalo.
-        - Contacto/Atención: Nuestro servicio al cliente es 24/7. Pueden llamarnos al 2721201331 o escribir a SKINCARE@GMAIL.COM.
-        - Reacciones Alérgicas: (MUY IMPORTANTE) Si el cliente pregunta por alergias, aconséjale siempre hacer una prueba de parche en una zona pequeña de la piel antes de usar el producto completo. Si presenta reacción, dile que suspenda el uso y consulte a su dermatólogo.
-        
-        CATÁLOGO DE PRODUCTOS:
-        - Hyaluronic Acid 2% + B5 (with Ceramides) por $375 MXN
-        - Glucoside Foaming Cleanser
-        - EL CONJUNTO DIARIO por $480MXN
-        - LA COLECCIÓN DE PIEL SUAVE por $280 MXN
-        - EL CONJUNTO BRILLANTE por $275 MXN
-        - Bálsamo labial Squalane + Amino Acids (Menciona que hay una promoción: Llavero gratis al usar el código SLOWLIP).
-        
-        Responde a la siguiente consulta del cliente de manera breve, natural y persuasiva:
-        Cliente: ${mensajeUsuario}
-        `;
+        // 4. URL con el modelo corregido
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-        // Hacemos la petición a Google Gemini
+        // 5. La petición
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: promptDelSistema
-                    }]
-                }]
+                contents: [{ parts: [{ text: "Eres el asistente de Hola Bonita. Cliente: " + mensajeUsuario }] }]
             })
         });
 
-        const data = await response.json();
+        // 6. Si Google responde con error, imprimimos QUÉ error es
+        if (!response.ok) {
+            const errorDetalle = await response.text();
+            console.error("Google API respondió con error:", errorDetalle);
+            return { statusCode: response.status, body: errorDetalle };
+        }
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify(data)
-        };
+        const data = await response.json();
+        return { statusCode: 200, body: JSON.stringify(data) };
 
     } catch (error) {
-        console.error("Error en el servidor de Netlify:", error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: 'Error al conectar con la IA' })
-        };
+        console.error("Error catastrofico en la funcion:", error);
+        return { statusCode: 500, body: JSON.stringify({ error: error.toString() }) };
     }
-}
-ss
+};
